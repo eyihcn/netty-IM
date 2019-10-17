@@ -9,10 +9,10 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import netty.im.handler.LoginRequestHandler;
-import netty.im.handler.PacketDecoder;
-import netty.im.handler.PacketEncoder;
-import netty.im.handler.Spliter;
+import netty.im.ConnetionCounter;
+import netty.im.handler.*;
+
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -22,6 +22,8 @@ public class ChatNettyServer {
 
 
     public static void main(String[] args) throws InterruptedException {
+
+        // 定时打印连接数
 
         EventLoopGroup bossGroup = new NioEventLoopGroup(); // (1)
         EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -34,6 +36,7 @@ public class ChatNettyServer {
                         public void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline()
                                     .addLast(new Spliter())
+                                    .addLast(new LifeCyCleTestHandler())
                                     .addLast(new PacketDecoder())
                                     .addLast(new LoginRequestHandler())
                                     .addLast(new PacketEncoder());
@@ -43,6 +46,8 @@ public class ChatNettyServer {
                     .childOption(ChannelOption.SO_KEEPALIVE, true); // (6)
 
             ChannelFuture f = b.bind(8000).sync(); // (7)
+
+            b.config().group().scheduleAtFixedRate(ConnetionCounter.INSTANCE::printConnetionCount,0,1, TimeUnit.MINUTES);
 
             f.channel().closeFuture().sync();
         } finally {
