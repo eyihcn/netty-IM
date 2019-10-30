@@ -1,9 +1,7 @@
 package netty.im;
 
 import io.netty.buffer.ByteBuf;
-import netty.im.packet.LoginRequestPacket;
-import netty.im.packet.LoginResponsePacket;
-import netty.im.packet.Packet;
+import netty.im.packet.*;
 
 /**
  * 通信协议
@@ -89,6 +87,10 @@ public class PacketCodeC {
                 return LoginRequestPacket.class;
             case Command.LOGIN_RESPONSE:
                 return LoginResponsePacket.class;
+            case Command.MESSAGE_REQUEST:
+                return MessageRequestPacket.class;
+            case Command.MESSAGE_RESPONSE:
+                return MessageResponsePacket.class;
             default:
                 throw new IllegalStateException("Unexpected value: " + command);
         }

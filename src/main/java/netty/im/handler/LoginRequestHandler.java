@@ -2,6 +2,8 @@ package netty.im.handler;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import netty.im.Session;
+import netty.im.SessionUtil;
 import netty.im.packet.LoginRequestPacket;
 import netty.im.packet.LoginResponsePacket;
 
@@ -19,6 +21,14 @@ public class LoginRequestHandler extends SimpleChannelInboundHandler<LoginReques
         loginResponsePacket.setVersion(loginRequestPacket.getVersion());
         if (valid(loginRequestPacket)) {
             loginResponsePacket.setSuccess(true);
+            loginResponsePacket.setUserId(loginRequestPacket.getUserId());
+            loginResponsePacket.setUsername(loginRequestPacket.getUsername());
+            // 登录成功记录登录标记
+            Session session = new Session();
+            session.setUserId(loginRequestPacket.getUserId());
+            session.setUserName(loginRequestPacket.getUsername());
+            SessionUtil.bindSession(session,ctx.channel());
+            System.out.println("login successs");
         } else {
             loginResponsePacket.setReason("账号密码校验失败");
             loginResponsePacket.setSuccess(false);
@@ -31,4 +41,9 @@ public class LoginRequestHandler extends SimpleChannelInboundHandler<LoginReques
         return true;
     }
 
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        SessionUtil.unBindSession(ctx.channel());
+    }
 }
